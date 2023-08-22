@@ -1,67 +1,46 @@
-import sys
-
-A,B = map(int,sys.stdin.readline().split())
-N,M = map(int,sys.stdin.readline().split())
-robot_list = []
-for i in range(N):
-    robot1 = list(sys.stdin.readline().split())
-    if robot1[2] == 'N':
-        robot1[2] = 0
-    elif robot1[2] == 'E':
-        robot1[2] = 1
-    elif robot1[2] == 'S':
-        robot1[2] = 2
-    elif robot1[2] == 'W':
-        robot1[2] = 3    
-    robot_list.append(robot1)
-#north = 0
-#east = 1
-#south = 2
-#west = 3
-
-
-for j in range(M):
-    act = list(sys.stdin.readline().split())
-    #act[0] = robot num [1] 방향 [2] 반복횟수
-    if act[1] == 'L':
-        robot_list[int(act[0])][2] -= int(act[2])
-    elif act[1] == 'R':
-        robot_list[int(act[0])][2] += int(act[2])
+dx = [-1, 0, 1, 0]
+dy = [0, 1, 0,-1]
+A,B = map(int,input().split())
+N,M = map(int,input().split())
+command = []
+robot = dict()
+board = [[0]*A for _ in range(B)]
+for i in range(1,N+1):
+    x,y,d = input().split()
+    if d == "N":
+        d = 0
+    elif d == "E":
+        d = 1
+    elif d == "S":
+        d = 2
     else:
-        if robot_list[int(act[0])][2] == 0:
-            robot_list[int(act[0])][1] += int(act[2])
-            if robot_list[int(act[0])][1] <= 0 or robot_list[int(act[0])][1] > B:
-                print('Robot {} crashes into the wall',int(act[0]))
-                exit(0)
-            for __ in range(N):
-                if __ != robot_list[int(act[0])][1] and robot_list[int(act[0])][1] == robot_list[int(act[0])][1]:
-                    print('Robot {} crashes into robot {}'.format(int(act[0]), __))
-                    exit(0)
-        elif robot_list[int(act[0])][2] == 1:
-            robot_list[int(act[0])][0] += int(act[2])
-            if robot_list[int(act[0])][1] <= 0 or robot_list[int(act[0])][1] > A:
-                print('Robot {} crashes into the wall',int(act[0]))
-                exit(0)
-            for __ in range(N):
-                if __ != robot_list[int(act[0])][1] and robot_list[int(act[0])][1] == robot_list[int(act[0])][1]:
-                    print('Robot {} crashes into robot {}'.format(int(act[0]), __))
-                    exit(0)
-        elif robot_list[int(act[0])][2] == 2:
-            robot_list[int(act[0])][1] -= int(act[2])
-            if robot_list[int(act[0])][1] <= 0 or robot_list[int(act[0])][1] > B:
-                print('Robot {} crashes into the wall',int(act[0]))
-                exit(0)
-            for __ in range(N):
-                if __ != robot_list[int(act[0])][1] and robot_list[int(act[0])][1] == robot_list[int(act[0])][1]:
-                    print('Robot {} crashes into robot {}'.format(int(act[0]), __))
-                    exit(0)
-        elif robot_list[int(act[0])][2] == 3:
-            robot_list[int(act[0])][0] -= int(act[2])
-            if robot_list[int(act[0])][1] <= 0 or robot_list[int(act[0])][1] > A:
-                print('Robot {} crashes into the wall',int(act[0]))
-                exit(0)
-            for __ in range(N):
-                if __ != robot_list[int(act[0])][1] and robot_list[int(act[0])][1] == robot_list[int(act[0])][1]:
-                    print('Robot {} crashes into robot {}'.format(int(act[0]), __))
-                    exit(0)
-print('OK')
+        d = 3
+    board[(B-int(y))][int(x)-1] = 1
+    robot[i] = [(B-int(y)),int(x)-1,d]
+for _ in range(M):
+    x,y,d = input().split()
+    command.append([int(x),y,int(d)])
+for R, C, repeat in command:
+    for _ in range(repeat):
+        if C == "F":
+            curr_x, curr_y, direction = robot[R]
+            next_x = curr_x + dx[direction]
+            next_y = curr_y + dy[direction]
+            if not (0 <= next_x < B and 0 <= next_y < A):
+                print("Robot",R,"crashes into the wall")
+                exit()
+            elif board[next_x][next_y] == 1:
+                for i in robot:
+                    if next_x == robot[i][0] and next_y == robot[i][1]:
+                        print("Robot",R,"crashes into robot",i)
+                        exit()
+            else:
+                board[curr_x][curr_y] = 0
+                board[next_x][next_y] = 1
+                robot[R][0] = next_x
+                robot[R][1] = next_y
+        elif C == "L":
+            robot[R][2] = (robot[R][2]-1)%4
+        else:
+            robot[R][2] = (robot[R][2]+1)%4
+print("OK")
